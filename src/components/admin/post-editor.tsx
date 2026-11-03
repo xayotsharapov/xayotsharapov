@@ -39,35 +39,44 @@ type Fields = {
 
 const snap = (f: Fields) => JSON.stringify(f);
 
-export function PostEditor({ post, categories }: { post: Post | null; categories: Category[] }) {
+export function PostEditor({ post, categories }: { post: Post; categories: Category[] }) {
   const [f, setF] = useState<Fields>(() => ({
-    title: post?.title ?? "",
-    slug: post?.slug ?? "",
-    excerpt: post?.excerpt ?? "",
-    categoryId: post ? post.category_id ?? "" : categories[0]?.id ?? "",
-    coverUrl: post?.cover_url ?? null,
-    coverAlt: post?.cover_alt ?? "",
-    html: post?.content_html ?? "",
-    metaTitle: post?.meta_title ?? "",
-    metaDescription: post?.meta_description ?? "",
-    publishedAt: toLocalInput(post?.published_at ?? null),
+    title: post.title,
+    // Fresh drafts have a placeholder slug; it's replaced from the title.
+    slug: post.title ? post.slug : "",
+    excerpt: post.excerpt,
+    categoryId: post.category_id ?? (post.title ? "" : categories[0]?.id ?? ""),
+    coverUrl: post.cover_url,
+    coverAlt: post.cover_alt,
+    html: post.content_html,
+    metaTitle: post.meta_title ?? "",
+    metaDescription: post.meta_description ?? "",
+    publishedAt: toLocalInput(post.published_at),
   }));
   const set = <K extends keyof Fields>(k: K, v: Fields[K]) => setF((prev) => ({ ...prev, [k]: v }));
 
-  const [json, setJson] = useState<JSONContent | null>((post?.content_json as JSONContent) ?? null);
-  const [slugTouched, setSlugTouched] = useState(!!post);
-  const [id, setId] = useState<string | null>(post?.id ?? null);
-  const [savedStatus, setSavedStatus] = useState<PostStatus>(post?.status ?? "draft");
+  const [json, setJson] = useState<JSONContent | null>((post.content_json as JSONContent) ?? null);
+  // Published slugs never follow the title automatically (that would break links).
+  const [slugTouched, setSlugTouched] = useState(
+    post.status === "published" || (!!post.title && post.slug !== slugify(post.title)),
+  );
+  const id = post.id;
+  const [savedStatus, setSavedStatus] = useState<PostStatus>(post.status);
   const [state, setState] = useState<{ kind: "idle" | "saving" | "saved" | "error"; msg?: string }>({
     kind: "idle",
   });
-  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(post ? new Date(post.updated_at) : null);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(new Date(post.updated_at));
+
+  const [initialContent] = useState<JSONContent | string>(() => json ?? post.content_html);
+  const onContentChange = useCallback((html: string, j: JSONContent) => {
+    setF((prev) => ({ ...prev, html }));
+    setJson(j);
+  }, []);
 
   const current = useMemo(() => snap(f), [f]);
   const savedSnap = useRef(current);
   const dirty = current !== savedSnap.current;
 
-  const idRef = useRef(id);
   const inFlight = useRef<Promise<unknown> | null>(null);
   const latest = useRef({ f, json });
   latest.current = { f, json };
@@ -76,7 +85,7 @@ export function PostEditor({ post, categories }: { post: Post | null; categories
     while (inFlight.current) await inFlight.current;
     const { f: fields, json: content } = latest.current;
     const input: PostInput = {
-      id: idRef.current,
+      id,
       title: fields.title,
       slug: fields.slug,
       excerpt: fields.excerpt,
@@ -105,11 +114,6 @@ export function PostEditor({ post, categories }: { post: Post | null; categories
       setState({ kind: "error", msg: res.error });
       return null;
     }
-    const isNew = !idRef.current;
-    idRef.current = res.id;
-    setId(res.id);
-    if (isNew) window.history.replaceState(null, "", `/admin/posts/${res.id}`);
-
     const next = { ...fields, slug: res.slug, publishedAt: toLocalInput(res.publishedAt) };
     savedSnap.current = snap(next);
     setF((prev) => ({ ...prev, slug: res.slug, publishedAt: next.publishedAt }));
@@ -118,7 +122,7 @@ export function PostEditor({ post, categories }: { post: Post | null; categories
     setLastSavedAt(new Date(res.savedAt));
     setState({ kind: "saved" });
     return res.id;
-  }, []);
+  }, [id]);
 
   // Autosave: drafts only. Published posts change only when you press "Yangilash".
   useEffect(() => {
@@ -150,10 +154,8 @@ export function PostEditor({ post, categories }: { post: Post | null; categories
 
   async function preview() {
     const win = window.open("about:blank", "_blank"); // open now, before await, to avoid popup blockers
-    let postId = idRef.current;
-    if (savedStatus === "draft" && (dirty || !postId)) postId = await save("draft");
-    if (!postId) return win?.close();
-    if (win) win.location.href = `/admin/posts/${postId}/preview`;
+    if (savedStatus === "draft" && dirty && !(await save("draft"))) return win?.close();
+    if (win) win.location.href = `/admin/posts/${id}/preview`;
   }
 
   const scheduled =
@@ -179,13 +181,7 @@ export function PostEditor({ post, categories }: { post: Post | null; categories
           className="field-sizing-content w-full resize-none bg-transparent font-serif text-3xl leading-tight font-semibold outline-none placeholder:text-faint sm:text-4xl"
           aria-label="Sarlavha"
         />
-        <RichEditor
-          initialContent={json ?? f.html}
-          onChange={(html, j) => {
-            set("html", html);
-            setJson(j);
-          }}
-        />
+        <RichEditor initialContent={initialContent} onChange={onContentChange} />
         <p className="text-sm text-faint">
           {words} so‘z · ~{Math.max(1, Math.round(words / 200))} daqiqa o‘qish
         </p>
@@ -209,7 +205,7 @@ export function PostEditor({ post, categories }: { post: Post | null; categories
               <button className="btn btn-primary" onClick={() => void save("published")} disabled={state.kind === "saving"}>
                 Nashr qilish
               </button>
-              <button className="btn" onClick={() => void save("draft")} disabled={state.kind === "saving" || (!dirty && !!id)}>
+              <button className="btn" onClick={() => void save("draft")} disabled={state.kind === "saving" || !dirty}>
                 Saqlash
               </button>
               <button className="btn" onClick={() => void preview()}>
@@ -340,11 +336,9 @@ export function PostEditor({ post, categories }: { post: Post | null; categories
           </div>
         </details>
 
-        {id && (
-          <div className="border-t border-line pt-4">
-            <DeletePostButton id={id} title={f.title} afterDelete="list" />
-          </div>
-        )}
+        <div className="border-t border-line pt-4">
+          <DeletePostButton id={id} title={f.title} afterDelete="list" />
+        </div>
       </aside>
     </div>
   );

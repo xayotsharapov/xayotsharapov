@@ -1,4 +1,5 @@
 "use server";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { sanitizePostHtml } from "@/lib/sanitize";
@@ -101,6 +102,29 @@ export async function savePost(input: PostInput): Promise<SaveResult> {
     publishedAt: result.data.published_at,
     savedAt: result.data.updated_at,
   };
+}
+
+/** "+ Yangi maqola": create an empty draft and open it in the editor. */
+export async function createDraft() {
+  await requireAdmin();
+  const supabase = await createClient();
+  // Tidy up drafts that were opened but never written in.
+  await supabase
+    .from("posts")
+    .delete()
+    .eq("status", "draft")
+    .eq("title", "")
+    .eq("content_html", "")
+    .is("cover_url", null)
+    .lt("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString());
+
+  const { data, error } = await supabase
+    .from("posts")
+    .insert({ slug: `qoralama-${crypto.randomUUID().slice(0, 8)}`, status: "draft" })
+    .select("id")
+    .single();
+  if (error) throw new Error("Qoralama yaratib bo‘lmadi.");
+  redirect(`/admin/posts/${data.id}`);
 }
 
 export async function deletePost(id: string): Promise<{ ok: boolean; error?: string }> {

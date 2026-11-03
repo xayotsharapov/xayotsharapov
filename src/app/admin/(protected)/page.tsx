@@ -5,6 +5,7 @@ import { formatDate, formatViews } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { DeletePostButton } from "@/components/admin/delete-post-button";
 import type { Category, PostStatus } from "@/lib/types";
+import { createDraft } from "./posts/actions";
 
 type Row = {
   id: string;
@@ -42,9 +43,9 @@ export default async function AdminPosts({
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Maqolalar</h1>
-        <Link href="/admin/posts/new" className="btn btn-primary">
-          + Yangi maqola
-        </Link>
+        <form action={createDraft}>
+          <button className="btn btn-primary">+ Yangi maqola</button>
+        </form>
       </div>
 
       <form className="mb-6 flex flex-wrap gap-2" role="search">

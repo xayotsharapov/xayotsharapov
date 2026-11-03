@@ -3,7 +3,7 @@ import { EditorContent, useEditor, useEditorState, type Editor, type JSONContent
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import { Placeholder } from "@tiptap/extension-placeholder";
-import { useRef, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { uploadImage } from "@/lib/upload";
 
 type Props = {
@@ -11,9 +11,34 @@ type Props = {
   onChange: (html: string, json: JSONContent) => void;
 };
 
-export function RichEditor({ initialContent, onChange }: Props) {
+// Defined once: a new extensions array on each render makes TipTap rebuild the editor.
+const EXTENSIONS = [
+  StarterKit.configure({
+    heading: { levels: [2, 3] },
+    underline: false,
+    code: false,
+    codeBlock: false,
+    link: {
+      openOnClick: false,
+      autolink: true,
+      defaultProtocol: "https",
+      HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
+    },
+  }),
+  Image.configure({ inline: false, allowBase64: false }),
+  Placeholder.configure({ placeholder: "Yozishni boshlang…" }),
+];
+
+/**
+ * The editor is created once and owns its content. Parent re-renders (autosave, other fields)
+ * never reset it. Memoized so typing elsewhere doesn't re-render it.
+ */
+export const RichEditor = memo(function RichEditor({ initialContent, onChange }: Props) {
   const [uploading, setUploading] = useState(false);
   const editorRef = useRef<Editor | null>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const [initial] = useState(initialContent);
 
   async function insertFiles(files: File[], pos?: number) {
     const images = files.filter((f) => f.type.startsWith("image/"));
@@ -35,25 +60,14 @@ export function RichEditor({ initialContent, onChange }: Props) {
     return true;
   }
 
-  const editor = useEditor({
-    immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [2, 3] },
-        underline: false,
-        code: false,
-        codeBlock: false,
-        link: {
-          openOnClick: false,
-          autolink: true,
-          defaultProtocol: "https",
-          HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
-        },
-      }),
-      Image.configure({ inline: false, allowBase64: false }),
-      Placeholder.configure({ placeholder: "Yozishni boshlang…" }),
-    ],
-    content: initialContent,
+  const insertRef = useRef(insertFiles);
+  insertRef.current = insertFiles;
+
+  const editor = useEditor(
+    {
+      immediatelyRender: false,
+      extensions: EXTENSIONS,
+      content: initial,
     editorProps: {
       attributes: {
         class: "tiptap article prose min-h-[50vh] max-w-none py-4",
@@ -61,22 +75,22 @@ export function RichEditor({ initialContent, onChange }: Props) {
       handlePaste(_view, event) {
         const files = Array.from(event.clipboardData?.files ?? []);
         if (!files.some((f) => f.type.startsWith("image/"))) return false;
-        void insertFiles(files);
+        void insertRef.current(files);
         return true;
       },
       handleDrop(view, event) {
         const files = Array.from(event.dataTransfer?.files ?? []);
         if (!files.some((f) => f.type.startsWith("image/"))) return false;
         const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
-        void insertFiles(files, pos);
+        void insertRef.current(files, pos);
         return true;
       },
     },
-    onCreate: ({ editor }) => {
-      editorRef.current = editor;
+    onUpdate: ({ editor }) => onChangeRef.current(editor.getHTML(), editor.getJSON()),
     },
-    onUpdate: ({ editor }) => onChange(editor.getHTML(), editor.getJSON()),
-  });
+    [], // create once
+  );
+  editorRef.current = editor;
 
   return (
     <div className="rounded-md border border-line">
@@ -86,7 +100,7 @@ export function RichEditor({ initialContent, onChange }: Props) {
       </div>
     </div>
   );
-}
+});
 
 function Toolbar({
   editor,
@@ -138,6 +152,10 @@ function Toolbar({
     <div
       role="toolbar"
       aria-label="Formatlash"
+      // Keep focus and selection in the text when a toolbar button is clicked.
+      onMouseDown={(e) => {
+        if ((e.target as HTMLElement).closest("button")) e.preventDefault();
+      }}
       className="sticky top-0 z-10 flex flex-wrap items-center gap-1 rounded-t-md border-b border-line bg-bg/95 p-2 backdrop-blur"
     >
       <button type="button" className={btn(s.h2)} onClick={() => c().toggleHeading({ level: 2 }).run()} title="Sarlavha 2">H2</button>

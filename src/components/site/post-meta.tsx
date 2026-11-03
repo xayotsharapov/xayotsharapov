@@ -41,14 +41,15 @@ export function PostMeta({
       </time>,
     );
   items.push(<span key="r">{readingMinutes} daqiqa</span>);
-  if (views !== undefined) items.push(<span key="v">{formatViews(views)} marta o‘qilgan</span>);
+  if (views) items.push(<span key="v">{formatViews(views)} marta o‘qilgan</span>);
 
+  // The separator trails each item, so wrapped lines never start with "·".
   return (
     <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted ${className}`}>
       {items.map((it, i) => (
-        <span key={i} className="flex items-center gap-x-2">
-          {i > 0 && <span aria-hidden className="text-faint">·</span>}
+        <span key={i} className="flex items-center gap-x-2 whitespace-nowrap">
           {it}
+          {i < items.length - 1 && <span aria-hidden className="text-faint">·</span>}
         </span>
       ))}
     </div>

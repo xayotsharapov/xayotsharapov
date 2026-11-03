@@ -26,7 +26,7 @@ export async function uploadImage(file: File, maxSide = 2000): Promise<UploadedI
       maxSizeMB: 0.9,
       initialQuality: 0.82,
       fileType: "image/webp",
-      useWebWorker: true,
+      useWebWorker: false, // the worker mode loads a script from a CDN; in-page is fast enough for one image
     });
   }
   if (blob.size > 5 * 1024 * 1024) throw new Error("Rasm juda katta (5 MB dan oshmasin).");

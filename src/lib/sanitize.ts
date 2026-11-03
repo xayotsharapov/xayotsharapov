@@ -1,6 +1,11 @@
 import "server-only";
 import sanitizeHtml from "sanitize-html";
 
+// Images must be https (or http only when Supabase itself runs on http, i.e. local dev).
+const IMG_SCHEMES = process.env.NEXT_PUBLIC_SUPABASE_URL?.startsWith("http://")
+  ? ["https", "http"]
+  : ["https"];
+
 const OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: [
     "p", "br", "hr", "h2", "h3", "h4", "strong", "b", "em", "i", "s", "u", "code", "pre",
@@ -12,7 +17,7 @@ const OPTIONS: sanitizeHtml.IOptions = {
     ol: ["start"],
   },
   allowedSchemes: ["http", "https", "mailto", "tel"],
-  allowedSchemesByTag: { img: ["https"] },
+  allowedSchemesByTag: { img: IMG_SCHEMES },
   allowProtocolRelative: false,
   transformTags: {
     a: (tagName, attribs) => {
