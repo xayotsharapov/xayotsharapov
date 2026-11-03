@@ -49,10 +49,17 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       modifiedTime: post.updated_at,
       section: post.category?.name,
       authors: [site.name],
-      // No cover → the generated opengraph-image.tsx in this folder is used.
-      ...(post.cover_url
-        ? { images: [{ url: post.cover_url, width: 1200, height: 675, alt: post.cover_alt || post.title }] }
-        : {}),
+      // Cover image, or a generated text card when there's no cover.
+      images: post.cover_url
+        ? [{ url: post.cover_url, alt: post.cover_alt || post.title }]
+        : [
+            {
+              url: `/og?${new URLSearchParams({ title: post.title, category: post.category?.name ?? "" })}`,
+              width: 1200,
+              height: 630,
+              alt: post.title,
+            },
+          ],
     },
     twitter: { card: "summary_large_image", title, description: desc },
   };

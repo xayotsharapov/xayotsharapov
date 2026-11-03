@@ -5,12 +5,12 @@ import { site, siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const serif = Source_Serif_4({
-  subsets: ["latin", "latin-ext", "cyrillic"],
+  subsets: ["latin"], // covers Uzbek Latin incl. oʻ gʻ (U+02BB)
   variable: "--font-source-serif",
   display: "swap",
 });
 const sans = Inter({
-  subsets: ["latin", "latin-ext", "cyrillic"],
+  subsets: ["latin"], // covers Uzbek Latin incl. oʻ gʻ (U+02BB)
   variable: "--font-inter",
   display: "swap",
 });
@@ -29,6 +29,7 @@ export const metadata: Metadata = {
     locale: site.locale,
     title: site.name,
     description: site.description,
+    images: [{ url: "/og", width: 1200, height: 630, alt: site.name }],
   },
   twitter: { card: "summary_large_image" },
 };

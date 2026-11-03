@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Always render <title>/<meta> in <head> (not streamed), so every crawler and
+  // link-preview scraper sees them. Metadata lookups are cached, so this is cheap.
+  htmlLimitedBots: /.*/,
   experimental: {
     serverActions: { bodySizeLimit: "2mb" },
   },

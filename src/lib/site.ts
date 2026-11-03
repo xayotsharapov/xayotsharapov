@@ -5,7 +5,7 @@ export const site = {
   description:
     "Kopirayting, Meta reklama va sotuvchi matnlar haqida shaxsiy blog.",
   intro:
-    "Salom! Men matn yozaman va Meta’da reklama yurgizaman. Bu yerda ish jarayonida o‘rgangan narsalarim haqida yozaman: qanday sarlavha bosiladi, qaysi reklama sotadi va nimalar pulni behuda yoqadi.",
+    "Salom! Men matn yozaman va Meta’da reklama yurgizaman. Bu yerda ish jarayonida o‘rgangan narsalarim haqida yozaman: qanday sarlavha bosiladi, qaysi reklama sotadi va nimalar pulni behuda sovuradi.",
   locale: "uz_UZ",
   lang: "uz",
 };
