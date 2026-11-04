@@ -10,7 +10,7 @@ const plain = (s: string) => s.replace(/[ʻʼ‘’`]/g, "'").slice(0, 140);
 export function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const title = plain(searchParams.get("title") || site.name);
-  const category = plain(searchParams.get("category") || site.role);
+  const category = plain(searchParams.get("category") || "Blog");
 
   return new ImageResponse(
     (

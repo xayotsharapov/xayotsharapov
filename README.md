@@ -66,8 +66,8 @@ Push to the branch connected to the Vercel project. No extra configuration is ne
 
 ## Make it yours
 
-- **Name, role, intro, description:** `src/lib/site.ts`
-- **About page text:** `src/app/(site)/about/page.tsx`
+- **Name, intro, description:** `src/lib/site.ts`
+- **About page (later):** create `src/app/(site)/about/page.tsx` and add it to `header.tsx`
 - **Colours and fonts:** `src/app/globals.css` (CSS variables for light and dark) and `src/app/layout.tsx`
 - **Header links:** `src/components/site/header.tsx`
 
@@ -111,7 +111,7 @@ Push to the branch connected to the Vercel project. No extra configuration is ne
 supabase/migrations/0001_init.sql   database schema, RLS, storage
 src/
   app/
-    (site)/            public pages: /, /blog, /blog/[slug], /about
+    (site)/            public pages: /, /blog, /blog/[slug]
     admin/             login + protected admin panel (posts, editor, preview, categories)
     api/views/         view counter endpoint
     og/                generated Open Graph images

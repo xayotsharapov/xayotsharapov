@@ -10,7 +10,6 @@ export function Footer() {
         </p>
         <nav className="flex gap-5">
           <Link href="/blog" className="hover:text-fg">Blog</Link>
-          <Link href="/about" className="hover:text-fg">Men haqimda</Link>
           <a href="/rss.xml" className="hover:text-fg">RSS</a>
         </nav>
       </div>

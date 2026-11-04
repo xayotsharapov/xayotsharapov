@@ -17,7 +17,7 @@ const sans = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
-  title: { default: `${site.name} — ${site.role}`, template: `%s — ${site.name}` },
+  title: { default: site.name, template: `%s — ${site.name}` },
   description: site.description,
   alternates: {
     canonical: "/",
