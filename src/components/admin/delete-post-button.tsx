@@ -22,7 +22,7 @@ export function DeletePostButton({
       className={className}
       disabled={pending}
       onClick={() => {
-        if (!confirm(`“${title || "Nomsiz"}” maqolasini butunlay o‘chirasizmi? Buni qaytarib bo‘lmaydi.`))
+        if (!confirm(`Permanently delete “${title || "Untitled"}”? This cannot be undone.`))
           return;
         start(async () => {
           const res = await deletePost(id);
@@ -32,7 +32,7 @@ export function DeletePostButton({
         });
       }}
     >
-      {pending ? "O‘chirilmoqda…" : "O‘chirish"}
+      {pending ? "Deleting…" : "Delete"}
     </button>
   );
 }

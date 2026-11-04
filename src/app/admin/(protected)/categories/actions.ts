@@ -10,8 +10,8 @@ export type CategoryResult = { ok: boolean; error?: string };
 function clean(nameRaw: string, slugRaw: string) {
   const name = nameRaw.trim().slice(0, 60);
   const slug = (slugRaw.trim() || slugify(name)).toLowerCase();
-  if (!name) return { error: "Nom kiriting." } as const;
-  if (!SLUG_RE.test(slug)) return { error: "Slug noto‘g‘ri." } as const;
+  if (!name) return { error: "Enter a name." } as const;
+  if (!SLUG_RE.test(slug)) return { error: "Invalid slug: use lowercase letters, numbers and hyphens." } as const;
   return { name, slug } as const;
 }
 
@@ -22,9 +22,9 @@ function done(): CategoryResult {
 }
 
 function fail(error: { code?: string } | null): CategoryResult {
-  if (error?.code === "23505") return { ok: false, error: "Bu slug band." };
+  if (error?.code === "23505") return { ok: false, error: "That slug is already in use." };
   console.error("category", error);
-  return { ok: false, error: "Xatolik yuz berdi." };
+  return { ok: false, error: "Something went wrong." };
 }
 
 export async function createCategory(name: string, slug: string): Promise<CategoryResult> {

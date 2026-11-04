@@ -2,7 +2,7 @@
 
 Next.js 15 (App Router) · TypeScript · Tailwind CSS v4 · Supabase (Postgres, Storage, Auth) · Vercel.
 
-Uzbek-language writer's blog with an admin panel at `/admin`.
+Uzbek-language writer's blog with an English admin panel at `/admin`.
 
 ---
 
@@ -74,11 +74,11 @@ Push to the branch connected to the Vercel project. No extra configuration is ne
 ## How things work
 
 **Writing**
-- **New post** creates a draft and opens the editor. Drafts **autosave** 2 s after you stop typing.
+- **+ New post** creates a draft and opens the editor. Drafts **autosave** 2 s after you stop typing.
   `Ctrl/Cmd+S` saves straight away.
-- Published posts **don't autosave**, so half-finished edits never go live. Press **Yangilash**
-  (Update) to publish your changes.
-- **Ko‘rib chiqish** (Preview) shows the draft in the real post layout. Only you can open it.
+- Published posts **don't autosave**, so half-finished edits never go live. Press **Update**
+  to publish your changes.
+- **Preview** shows the draft in the real post layout. Only you can open it.
 - A publish date in the future schedules the post. It goes live within about 10 minutes of that time.
 - Images (cover and inline: toolbar button, paste or drag-and-drop) are resized to max 2000 px and
   converted to WebP in the browser before upload.

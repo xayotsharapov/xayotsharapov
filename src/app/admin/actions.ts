@@ -8,7 +8,7 @@ export type LoginState = { error?: string };
 export async function signIn(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-  const generic = { error: "Email yoki parol noto‘g‘ri." };
+  const generic = { error: "Incorrect email or password." };
 
   if (!email || !password) return generic;
   // Don't even ask Supabase for non-allowlisted emails.

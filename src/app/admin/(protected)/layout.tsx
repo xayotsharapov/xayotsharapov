@@ -11,25 +11,25 @@ export const metadata: Metadata = {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireAdmin();
   return (
-    <div className="min-h-dvh">
+    <div lang="en" className="min-h-dvh">
       <header className="border-b border-line">
         <nav className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 text-sm">
           <Link href="/admin" className="font-semibold">
             Admin
           </Link>
           <Link href="/admin" className="text-muted hover:text-fg">
-            Maqolalar
+            Posts
           </Link>
           <Link href="/admin/categories" className="text-muted hover:text-fg">
-            Kategoriyalar
+            Categories
           </Link>
           <Link href="/" className="text-muted hover:text-fg" target="_blank">
-            Saytni ochish ↗
+            View site ↗
           </Link>
           <span className="ml-auto hidden text-faint sm:inline">{user.email}</span>
           <form action={signOut}>
             <button type="submit" className="text-muted hover:text-fg">
-              Chiqish
+              Log out
             </button>
           </form>
         </nav>

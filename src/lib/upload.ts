@@ -17,7 +17,7 @@ export type UploadedImage = { url: string; width: number; height: number };
  * GIFs are uploaded as-is so animation survives.
  */
 export async function uploadImage(file: File, maxSide = 2000): Promise<UploadedImage> {
-  if (!file.type.startsWith("image/")) throw new Error("Faqat rasm yuklash mumkin.");
+  if (!file.type.startsWith("image/")) throw new Error("Only image files can be uploaded.");
 
   let blob: Blob = file;
   if (file.type !== "image/gif") {
@@ -29,7 +29,7 @@ export async function uploadImage(file: File, maxSide = 2000): Promise<UploadedI
       useWebWorker: false, // the worker mode loads a script from a CDN; in-page is fast enough for one image
     });
   }
-  if (blob.size > 5 * 1024 * 1024) throw new Error("Rasm juda katta (5 MB dan oshmasin).");
+  if (blob.size > 5 * 1024 * 1024) throw new Error("Image is too large (max 5 MB).");
 
   const bitmap = await createImageBitmap(blob);
   const { width, height } = bitmap;
@@ -45,7 +45,7 @@ export async function uploadImage(file: File, maxSide = 2000): Promise<UploadedI
     cacheControl: "31536000",
     upsert: false,
   });
-  if (error) throw new Error(`Yuklab bo‘lmadi: ${error.message}`);
+  if (error) throw new Error(`Upload failed: ${error.message}`);
 
   const { data } = supabase.storage.from("images").getPublicUrl(path);
   return { url: data.publicUrl, width, height };

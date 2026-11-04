@@ -27,7 +27,7 @@ export function NewCategoryForm() {
     >
       <input
         className="input"
-        placeholder="Yangi kategoriya nomi"
+        placeholder="New category name"
         value={name}
         required
         onChange={(e) => {
@@ -45,7 +45,7 @@ export function NewCategoryForm() {
         }}
       />
       <button className="btn btn-primary shrink-0" disabled={pending}>
-        Qo‘shish
+        Add
       </button>
       {error && <p className="text-sm text-red-600 sm:self-center">{error}</p>}
     </form>
@@ -65,14 +65,16 @@ export function CategoryRow({
 
   return (
     <li className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center">
-      <input className="input" value={name} onChange={(e) => setName(e.target.value)} aria-label="Nom" />
+      <input className="input" value={name} onChange={(e) => setName(e.target.value)} aria-label="Name" />
       <input
         className="input font-mono text-sm"
         value={slug}
         onChange={(e) => setSlug(e.target.value)}
         aria-label="Slug"
       />
-      <span className="shrink-0 text-sm text-muted">{category.count} ta maqola</span>
+      <span className="shrink-0 text-sm text-muted">
+        {category.count} {category.count === 1 ? "post" : "posts"}
+      </span>
       <div className="flex shrink-0 gap-2">
         <button
           className="btn"
@@ -84,7 +86,7 @@ export function CategoryRow({
             })
           }
         >
-          Saqlash
+          Save
         </button>
         <button
           className="btn btn-danger"
@@ -92,8 +94,8 @@ export function CategoryRow({
           onClick={() => {
             const msg =
               category.count > 0
-                ? `“${category.name}” o‘chirilsinmi? ${category.count} ta maqola kategoriyasiz qoladi (maqolalar o‘chmaydi).`
-                : `“${category.name}” o‘chirilsinmi?`;
+                ? `Delete “${category.name}”? Its ${category.count} post(s) will be kept, just without a category.`
+                : `Delete “${category.name}”?`;
             if (!confirm(msg)) return;
             start(async () => {
               const res = await deleteCategory(category.id);
@@ -101,7 +103,7 @@ export function CategoryRow({
             });
           }}
         >
-          O‘chirish
+          Delete
         </button>
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}

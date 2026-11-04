@@ -19,14 +19,14 @@ export default async function CategoriesPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-6 text-2xl font-semibold">Kategoriyalar</h1>
+      <h1 className="mb-6 text-2xl font-semibold">Categories</h1>
       <NewCategoryForm />
       <ul className="mt-8 divide-y divide-line border-y border-line">
         {categories.map((c) => (
           <CategoryRow key={c.id} category={c} />
         ))}
       </ul>
-      {categories.length === 0 && <p className="mt-4 text-muted">Kategoriya yo‘q.</p>}
+      {categories.length === 0 && <p className="mt-4 text-muted">No categories yet.</p>}
     </div>
   );
 }

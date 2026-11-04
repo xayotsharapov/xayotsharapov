@@ -21,14 +21,14 @@ export default async function PreviewPage({ params }: { params: Promise<{ id: st
     <div>
       <div className="mb-10 flex flex-wrap items-center justify-between gap-2 rounded-md bg-amber-100 px-4 py-2 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
         <span>
-          Ko‘rib chiqish rejimi — {post.status === "draft" ? "qoralama, saytda ko‘rinmaydi" : "nashr qilingan"}.
+          Preview — {post.status === "draft" ? "draft, not visible on the site" : "published"}.
         </span>
         <Link href={`/admin/posts/${post.id}`} className="underline">
-          Tahrirlashga qaytish
+          Back to editor
         </Link>
       </div>
       <PostArticle
-        post={{ ...post, title: post.title || "Nomsiz", published_at: post.published_at ?? post.updated_at }}
+        post={{ ...post, title: post.title || "Untitled", published_at: post.published_at ?? post.updated_at }}
         linkCategory={false}
       />
     </div>

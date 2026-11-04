@@ -106,7 +106,7 @@ export function PostEditor({ post, categories }: { post: Post; categories: Categ
     try {
       res = await p;
     } catch {
-      res = { ok: false as const, error: "Tarmoq xatosi. Qaytadan urinib ko‘ring." };
+      res = { ok: false as const, error: "Network error. Please try again." };
     } finally {
       inFlight.current = null;
     }
@@ -124,7 +124,7 @@ export function PostEditor({ post, categories }: { post: Post; categories: Categ
     return res.id;
   }, [id]);
 
-  // Autosave: drafts only. Published posts change only when you press "Yangilash".
+  // Autosave: drafts only. Published posts change only when you press "Update".
   useEffect(() => {
     if (savedStatus !== "draft" || !dirty) return;
     if (!f.title.trim() && !htmlToText(f.html)) return; // don't create empty rows
@@ -152,6 +152,20 @@ export function PostEditor({ post, categories }: { post: Post; categories: Categ
     return () => window.removeEventListener("keydown", h);
   }, [save, savedStatus]);
 
+  const titleRef = useRef<HTMLTextAreaElement>(null);
+  const [titleMissing, setTitleMissing] = useState(false);
+
+  function publish() {
+    if (!f.title.trim()) {
+      setTitleMissing(true);
+      setState({ kind: "error", msg: "Add a title before publishing." });
+      titleRef.current?.focus();
+      titleRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+      return;
+    }
+    void save("published");
+  }
+
   async function preview() {
     const win = window.open("about:blank", "_blank"); // open now, before await, to avoid popup blockers
     if (savedStatus === "draft" && dirty && !(await save("draft"))) return win?.close();
@@ -167,23 +181,33 @@ export function PostEditor({ post, categories }: { post: Post; categories: Categ
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
       {/* Main column */}
       <div className="min-w-0 space-y-4">
-        <Link href="/admin" className="text-sm text-muted hover:text-fg">
-          ← Maqolalar
+        <Link href="/admin" className="mb-2 inline-block text-sm text-muted hover:text-fg">
+          ← All posts
         </Link>
-        <textarea
-          value={f.title}
-          onChange={(e) => {
-            const title = e.target.value.replace(/\n/g, " ");
-            setF((prev) => ({ ...prev, title, slug: slugTouched ? prev.slug : slugify(title) }));
-          }}
-          placeholder="Sarlavha"
-          rows={1}
-          className="field-sizing-content w-full resize-none bg-transparent font-serif text-3xl leading-tight font-semibold outline-none placeholder:text-faint sm:text-4xl"
-          aria-label="Sarlavha"
-        />
-        <RichEditor initialContent={initialContent} onChange={onContentChange} />
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium">Title</span>
+          <textarea
+            ref={titleRef}
+            value={f.title}
+            onChange={(e) => {
+              const title = e.target.value.replace(/\n/g, " ");
+              if (title.trim()) setTitleMissing(false);
+              setF((prev) => ({ ...prev, title, slug: slugTouched ? prev.slug : slugify(title) }));
+            }}
+            placeholder="Post title"
+            rows={1}
+            aria-invalid={titleMissing || undefined}
+            className={`field-sizing-content w-full resize-none rounded-md border bg-bg px-4 py-3 font-serif text-2xl leading-tight font-semibold outline-none placeholder:font-normal placeholder:text-faint focus:border-accent sm:text-3xl ${
+              titleMissing ? "border-red-500" : "border-line"
+            }`}
+          />
+        </label>
+        <div>
+          <span className="mb-1 block text-sm font-medium">Content</span>
+          <RichEditor initialContent={initialContent} onChange={onContentChange} />
+        </div>
         <p className="text-sm text-faint">
-          {words} so‘z · ~{Math.max(1, Math.round(words / 200))} daqiqa o‘qish
+          {words} words · ~{Math.max(1, Math.round(words / 200))} min read
         </p>
       </div>
 
@@ -202,40 +226,40 @@ export function PostEditor({ post, categories }: { post: Post; categories: Categ
 
           {savedStatus === "draft" ? (
             <div className="flex flex-wrap gap-2">
-              <button className="btn btn-primary" onClick={() => void save("published")} disabled={state.kind === "saving"}>
-                Nashr qilish
+              <button className="btn btn-primary" onClick={publish} disabled={state.kind === "saving"}>
+                Publish
               </button>
               <button className="btn" onClick={() => void save("draft")} disabled={state.kind === "saving" || !dirty}>
-                Saqlash
+                Save draft
               </button>
               <button className="btn" onClick={() => void preview()}>
-                Ko‘rib chiqish
+                Preview
               </button>
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
-              <button className="btn btn-primary" onClick={() => void save("published")} disabled={state.kind === "saving" || !dirty}>
-                Yangilash
+              <button className="btn btn-primary" onClick={publish} disabled={state.kind === "saving" || !dirty}>
+                Update
               </button>
               {!scheduled && (
                 <Link className="btn" href={`/blog/${f.slug}`} target="_blank">
-                  Ochish ↗
+                  View ↗
                 </Link>
               )}
               <button
                 className="btn"
                 disabled={state.kind === "saving"}
                 onClick={() => {
-                  if (confirm("Maqola saytdan olinib, qoralamaga qaytarilsinmi?")) void save("draft");
+                  if (confirm("Unpublish this post and move it back to drafts?")) void save("draft");
                 }}
               >
-                Qoralamaga qaytarish
+                Unpublish
               </button>
             </div>
           )}
 
           <label className="block">
-            <span className="mb-1 block text-sm text-muted">Nashr sanasi</span>
+            <span className="mb-1 block text-sm text-muted">Publish date</span>
             <input
               type="datetime-local"
               className="input text-sm"
@@ -243,7 +267,7 @@ export function PostEditor({ post, categories }: { post: Post; categories: Categ
               onChange={(e) => set("publishedAt", e.target.value)}
             />
             <span className="mt-1 block text-xs text-faint">
-              Bo‘sh bo‘lsa — nashr qilingan payt. Kelajakdagi sana — rejalashtirilgan.
+              Empty = the moment you publish. A future date schedules the post.
             </span>
           </label>
         </section>
@@ -271,9 +295,9 @@ export function PostEditor({ post, categories }: { post: Post; categories: Categ
           </label>
 
           <label className="block">
-            <span className="mb-1 block text-sm text-muted">Kategoriya</span>
+            <span className="mb-1 block text-sm text-muted">Category</span>
             <select className="input" value={f.categoryId} onChange={(e) => set("categoryId", e.target.value)}>
-              <option value="">— Kategoriyasiz —</option>
+              <option value="">— No category —</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -283,20 +307,20 @@ export function PostEditor({ post, categories }: { post: Post; categories: Categ
           </label>
 
           <label className="block">
-            <span className="mb-1 block text-sm text-muted">Qisqacha mazmun (excerpt)</span>
+            <span className="mb-1 block text-sm text-muted">Excerpt</span>
             <textarea
               className="input text-sm"
               rows={3}
               maxLength={500}
               value={f.excerpt}
               onChange={(e) => set("excerpt", e.target.value)}
-              placeholder="Kartochkalarda va qidiruv natijalarida ko‘rinadi"
+              placeholder="Short summary shown on post cards and in search results"
             />
           </label>
         </section>
 
         <section>
-          <span className="mb-2 block text-sm text-muted">Muqova rasmi</span>
+          <span className="mb-2 block text-sm text-muted">Cover image</span>
           <CoverField
             url={f.coverUrl}
             alt={f.coverAlt}
@@ -310,26 +334,26 @@ export function PostEditor({ post, categories }: { post: Post; categories: Categ
           <div className="mt-3 space-y-3">
             <label className="block">
               <span className="mb-1 flex justify-between text-sm text-muted">
-                Meta sarlavha <Counter n={(f.metaTitle || f.title).length} max={60} />
+                Meta title <Counter n={(f.metaTitle || f.title).length} max={60} />
               </span>
               <input
                 className="input text-sm"
                 maxLength={200}
                 value={f.metaTitle}
-                placeholder={f.title || "Bo‘sh bo‘lsa sarlavha ishlatiladi"}
+                placeholder={f.title || "Defaults to the post title"}
                 onChange={(e) => set("metaTitle", e.target.value)}
               />
             </label>
             <label className="block">
               <span className="mb-1 flex justify-between text-sm text-muted">
-                Meta tavsif <Counter n={(f.metaDescription || f.excerpt).length} max={160} />
+                Meta description <Counter n={(f.metaDescription || f.excerpt).length} max={160} />
               </span>
               <textarea
                 className="input text-sm"
                 rows={3}
                 maxLength={300}
                 value={f.metaDescription}
-                placeholder={f.excerpt || "Bo‘sh bo‘lsa qisqacha mazmun ishlatiladi"}
+                placeholder={f.excerpt || "Defaults to the excerpt"}
                 onChange={(e) => set("metaDescription", e.target.value)}
               />
             </label>
@@ -360,11 +384,11 @@ function SaveIndicator({
   draft: boolean;
 }) {
   let text = "";
-  if (state.kind === "saving") text = "Saqlanmoqda…";
-  else if (state.kind === "error") text = "Saqlanmadi";
-  else if (dirty) text = draft ? "O‘zgarishlar bor…" : "Saqlanmagan o‘zgarishlar";
+  if (state.kind === "saving") text = "Saving…";
+  else if (state.kind === "error") text = "Not saved";
+  else if (dirty) text = draft ? "Editing…" : "Unsaved changes";
   else if (lastSavedAt)
-    text = `Saqlandi ${lastSavedAt.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}`;
+    text = `Saved ${lastSavedAt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
   return (
     <span className="text-xs text-faint" aria-live="polite">
       {text}

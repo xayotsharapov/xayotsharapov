@@ -26,7 +26,7 @@ const EXTENSIONS = [
     },
   }),
   Image.configure({ inline: false, allowBase64: false }),
-  Placeholder.configure({ placeholder: "Yozishni boshlang…" }),
+  Placeholder.configure({ placeholder: "Start writing…" }),
 ];
 
 /**
@@ -136,7 +136,7 @@ function Toolbar({
 
   function setLink() {
     const prev = editor.getAttributes("link").href as string | undefined;
-    const url = prompt("Havola (URL). O‘chirish uchun bo‘sh qoldiring:", prev ?? "https://");
+    const url = prompt("Link URL (leave empty to remove the link):", prev ?? "https://");
     if (url === null) return;
     if (!url.trim() || url.trim() === "https://") return c().extendMarkRange("link").unsetLink().run();
     c().extendMarkRange("link").setLink({ href: url.trim() }).run();
@@ -144,45 +144,45 @@ function Toolbar({
 
   function setAlt() {
     const prev = (editor.getAttributes("image").alt as string) ?? "";
-    const alt = prompt("Rasm tavsifi (alt matn):", prev);
+    const alt = prompt("Image description (alt text):", prev);
     if (alt !== null) c().updateAttributes("image", { alt }).run();
   }
 
   return (
     <div
       role="toolbar"
-      aria-label="Formatlash"
+      aria-label="Formatting"
       // Keep focus and selection in the text when a toolbar button is clicked.
       onMouseDown={(e) => {
         if ((e.target as HTMLElement).closest("button")) e.preventDefault();
       }}
       className="sticky top-0 z-10 flex flex-wrap items-center gap-1 rounded-t-md border-b border-line bg-bg/95 p-2 backdrop-blur"
     >
-      <button type="button" className={btn(s.h2)} onClick={() => c().toggleHeading({ level: 2 }).run()} title="Sarlavha 2">H2</button>
-      <button type="button" className={btn(s.h3)} onClick={() => c().toggleHeading({ level: 3 }).run()} title="Sarlavha 3">H3</button>
+      <button type="button" className={btn(s.h2)} onClick={() => c().toggleHeading({ level: 2 }).run()} title="Heading 2">H2</button>
+      <button type="button" className={btn(s.h3)} onClick={() => c().toggleHeading({ level: 3 }).run()} title="Heading 3">H3</button>
       <span className="mx-1 h-5 w-px bg-line" />
-      <button type="button" className={`${btn(s.bold)} font-bold`} onClick={() => c().toggleBold().run()} title="Qalin (Ctrl+B)">B</button>
-      <button type="button" className={`${btn(s.italic)} italic`} onClick={() => c().toggleItalic().run()} title="Kursiv (Ctrl+I)">I</button>
-      <button type="button" className={`${btn(s.strike)} line-through`} onClick={() => c().toggleStrike().run()} title="Chizilgan">S</button>
+      <button type="button" className={`${btn(s.bold)} font-bold`} onClick={() => c().toggleBold().run()} title="Bold (Ctrl+B)">B</button>
+      <button type="button" className={`${btn(s.italic)} italic`} onClick={() => c().toggleItalic().run()} title="Italic (Ctrl+I)">I</button>
+      <button type="button" className={`${btn(s.strike)} line-through`} onClick={() => c().toggleStrike().run()} title="Strikethrough">S</button>
       <span className="mx-1 h-5 w-px bg-line" />
-      <button type="button" className={btn(s.bullet)} onClick={() => c().toggleBulletList().run()} title="Ro‘yxat">• ro‘yxat</button>
-      <button type="button" className={btn(s.ordered)} onClick={() => c().toggleOrderedList().run()} title="Raqamli ro‘yxat">1. ro‘yxat</button>
-      <button type="button" className={btn(s.quote)} onClick={() => c().toggleBlockquote().run()} title="Iqtibos">“ ”</button>
-      <button type="button" className={btn(false)} onClick={() => c().setHorizontalRule().run()} title="Ajratuvchi chiziq">—</button>
+      <button type="button" className={btn(s.bullet)} onClick={() => c().toggleBulletList().run()} title="Bullet list">• List</button>
+      <button type="button" className={btn(s.ordered)} onClick={() => c().toggleOrderedList().run()} title="Numbered list">1. List</button>
+      <button type="button" className={btn(s.quote)} onClick={() => c().toggleBlockquote().run()} title="Quote">“ ”</button>
+      <button type="button" className={btn(false)} onClick={() => c().setHorizontalRule().run()} title="Divider">—</button>
       <span className="mx-1 h-5 w-px bg-line" />
-      <button type="button" className={btn(s.link)} onClick={setLink} title="Havola">Havola</button>
+      <button type="button" className={btn(s.link)} onClick={setLink} title="Link">Link</button>
       <button
         type="button"
         className={btn(false)}
         onClick={() => fileInput.current?.click()}
         disabled={uploading}
-        title="Rasm qo‘shish"
+        title="Insert image"
       >
-        {uploading ? "Yuklanmoqda…" : "Rasm"}
+        {uploading ? "Uploading…" : "Image"}
       </button>
       {s.image && (
-        <button type="button" className={btn(false)} onClick={setAlt} title="Rasm tavsifi">
-          Alt matn
+        <button type="button" className={btn(false)} onClick={setAlt} title="Image description">
+          Alt text
         </button>
       )}
       <input
@@ -198,8 +198,8 @@ function Toolbar({
         }}
       />
       <span className="ml-auto flex gap-1">
-        <button type="button" className={btn(false)} disabled={!s.canUndo} onClick={() => c().undo().run()} title="Bekor qilish">↶</button>
-        <button type="button" className={btn(false)} disabled={!s.canRedo} onClick={() => c().redo().run()} title="Qaytarish">↷</button>
+        <button type="button" className={btn(false)} disabled={!s.canUndo} onClick={() => c().undo().run()} title="Undo">↶</button>
+        <button type="button" className={btn(false)} disabled={!s.canRedo} onClick={() => c().redo().run()} title="Redo">↷</button>
       </span>
     </div>
   );

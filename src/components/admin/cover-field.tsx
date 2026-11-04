@@ -27,23 +27,23 @@ export function CoverField({
           onClick={() => input.current?.click()}
           className="flex aspect-[16/9] w-full items-center justify-center rounded-md border border-dashed border-line text-sm text-muted hover:bg-surface"
         >
-          {busy ? "Yuklanmoqda…" : "Muqova rasmini tanlang"}
+          {busy ? "Uploading…" : "Choose a cover image"}
         </button>
       )}
       <div className="flex gap-2">
         <button type="button" className="btn" disabled={busy} onClick={() => input.current?.click()}>
-          {busy ? "Yuklanmoqda…" : url ? "Almashtirish" : "Yuklash"}
+          {busy ? "Uploading…" : url ? "Replace" : "Upload"}
         </button>
         {url && (
           <button type="button" className="btn" onClick={() => onChange(null)}>
-            Olib tashlash
+            Remove
           </button>
         )}
       </div>
       {url && (
         <input
           className="input text-sm"
-          placeholder="Rasm tavsifi (alt)"
+          placeholder="Image description (alt text)"
           value={alt}
           onChange={(e) => onAltChange(e.target.value)}
         />

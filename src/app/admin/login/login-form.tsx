@@ -11,7 +11,7 @@ export function LoginForm() {
         <input name="email" type="email" required autoComplete="email" className="input" />
       </label>
       <label className="block">
-        <span className="mb-1 block text-sm text-muted">Parol</span>
+        <span className="mb-1 block text-sm text-muted">Password</span>
         <input
           name="password"
           type="password"
@@ -26,7 +26,7 @@ export function LoginForm() {
         </p>
       )}
       <button type="submit" disabled={pending} className="btn btn-primary w-full">
-        {pending ? "Kirilmoqda…" : "Kirish"}
+        {pending ? "Logging in…" : "Log in"}
       </button>
     </form>
   );

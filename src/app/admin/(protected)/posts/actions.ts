@@ -36,15 +36,15 @@ export async function savePost(input: PostInput): Promise<SaveResult> {
 
   const title = input.title.trim();
   let slug = input.slug.trim() || slugify(title);
-  if (!slug) slug = `qoralama-${Date.now().toString(36)}`;
+  if (!slug) slug = `draft-${Date.now().toString(36)}`;
   if (!SLUG_RE.test(slug)) {
-    return { ok: false, error: "Slug faqat kichik lotin harflari, raqamlar va chiziqchadan iborat bo‘lsin." };
+    return { ok: false, error: "The slug can only contain lowercase letters, numbers and hyphens." };
   }
 
   if (input.status === "published") {
-    if (!title) return { ok: false, error: "Nashr qilish uchun sarlavha kerak." };
+    if (!title) return { ok: false, error: "Add a title before publishing." };
     if (!input.contentHtml.replace(/<[^>]*>/g, "").trim() && !input.contentHtml.includes("<img"))
-      return { ok: false, error: "Nashr qilish uchun matn kerak." };
+      return { ok: false, error: "Add some content before publishing." };
   }
 
   const contentHtml = sanitizePostHtml(input.contentHtml);
@@ -87,9 +87,9 @@ export async function savePost(input: PostInput): Promise<SaveResult> {
   }
 
   if (result.error) {
-    if (result.error.code === "23505") return { ok: false, error: "Bu slug band. Boshqasini tanlang." };
+    if (result.error.code === "23505") return { ok: false, error: "That slug is already used by another post. Choose a different one." };
     console.error("savePost", result.error);
-    return { ok: false, error: "Saqlab bo‘lmadi. Qaytadan urinib ko‘ring." };
+    return { ok: false, error: "Could not save. Please try again." };
   }
 
   if (wasPublished || input.status === "published") revalidatePublic();
@@ -104,7 +104,7 @@ export async function savePost(input: PostInput): Promise<SaveResult> {
   };
 }
 
-/** "+ Yangi maqola": create an empty draft and open it in the editor. */
+/** "+ New post": create an empty draft and open it in the editor. */
 export async function createDraft() {
   await requireAdmin();
   const supabase = await createClient();
@@ -120,10 +120,10 @@ export async function createDraft() {
 
   const { data, error } = await supabase
     .from("posts")
-    .insert({ slug: `qoralama-${crypto.randomUUID().slice(0, 8)}`, status: "draft" })
+    .insert({ slug: `draft-${crypto.randomUUID().slice(0, 8)}`, status: "draft" })
     .select("id")
     .single();
-  if (error) throw new Error("Qoralama yaratib bo‘lmadi.");
+  if (error) throw new Error("Could not create a draft.");
   redirect(`/admin/posts/${data.id}`);
 }
 
@@ -133,7 +133,7 @@ export async function deletePost(id: string): Promise<{ ok: boolean; error?: str
   const { error } = await supabase.from("posts").delete().eq("id", id);
   if (error) {
     console.error("deletePost", error);
-    return { ok: false, error: "O‘chirib bo‘lmadi." };
+    return { ok: false, error: "Could not delete the post." };
   }
   revalidatePublic();
   return { ok: true };

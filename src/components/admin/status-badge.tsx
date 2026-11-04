@@ -1,7 +1,7 @@
 import type { PostStatus } from "@/lib/types";
 
 export function StatusBadge({ status, scheduled }: { status: PostStatus; scheduled?: boolean }) {
-  const label = status === "draft" ? "Qoralama" : scheduled ? "Rejalashtirilgan" : "Nashr qilingan";
+  const label = status === "draft" ? "Draft" : scheduled ? "Scheduled" : "Published";
   const tone =
     status === "draft"
       ? "bg-surface text-muted"
