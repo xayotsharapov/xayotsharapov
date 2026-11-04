@@ -1,11 +1,9 @@
 // ─── Edit these to make the site yours ───────────────────────────────
 export const site = {
-  name: "Ism Familiya", // TODO: your name
-  role: "Kopirayter va Meta reklama mutaxassisi",
+  name: "Xayot Sharapov",
   description:
     "Kopirayting, Meta reklama va sotuvchi matnlar haqida shaxsiy blog.",
-  intro:
-    "Salom! Men matn yozaman va Meta’da reklama yurgizaman. Bu yerda ish jarayonida o‘rgangan narsalarim haqida yozaman: qanday sarlavha bosiladi, qaysi reklama sotadi va nimalar pulni behuda sovuradi.",
+  intro: "Balkim bu yerda ma'qolalar bo'lar...",
   locale: "uz_UZ",
   lang: "uz",
 };

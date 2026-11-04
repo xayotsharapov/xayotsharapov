@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllPublished, getPostBySlug, getRelatedPosts } from "@/lib/posts";
 import { htmlToText } from "@/lib/reading-time";
@@ -79,7 +78,7 @@ export default async function PostPage({ params }: { params: Params }) {
     image: post.cover_url ? [post.cover_url] : undefined,
     datePublished: post.published_at,
     dateModified: post.updated_at,
-    author: { "@type": "Person", name: site.name, url: `${siteUrl()}/about` },
+    author: { "@type": "Person", name: site.name, url: siteUrl() },
     mainEntityOfPage: `${siteUrl()}/blog/${post.slug}`,
     inLanguage: "uz",
   };
@@ -93,14 +92,6 @@ export default async function PostPage({ params }: { params: Params }) {
       <ViewTracker postId={post.id} />
       <PostArticle post={post} />
 
-      <aside className="mx-auto mt-16 max-w-[68ch] border-t border-line pt-8">
-        <p className="font-serif text-lg leading-relaxed text-muted">
-          <Link href="/about" className="font-semibold text-fg hover:text-accent">
-            {site.name}
-          </Link>{" "}
-          — {site.role}. Bu yerda amaliyotdan olingan tajribalar haqida yozadi.
-        </p>
-      </aside>
 
       {related.length > 0 && (
         <section aria-labelledby="related" className="mt-20">

@@ -5,7 +5,6 @@ import { ThemeToggle } from "./theme-toggle";
 // Add future sections (e.g. { href: "/products", label: "Mahsulotlar" }) here.
 const NAV = [
   { href: "/blog", label: "Blog" },
-  { href: "/about", label: "Men haqimda" },
 ];
 
 export function Header() {
